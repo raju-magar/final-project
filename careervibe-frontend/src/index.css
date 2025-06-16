@@ -1,0 +1,18 @@
+ @import 'animate.css';
+
+@tailwind base;
+     @tailwind components;
+     @tailwind utilities;
+
+    
+     /* Custom RGB styles */
+     .hero-section {
+      @apply bg-[rgb-gradient] text-white py-20 text-center;
+     }
+     .job-card {
+      @apply bg-white rounded-lg shadow-lg p-6 transition-all duration-300 
+      hover:shadow-2xl hover:-translate-y-2;
+     }
+     .highlight {
+      @apply bg-[rgb-alt-gradient] text-white p-2 rounded-md;
+     }
