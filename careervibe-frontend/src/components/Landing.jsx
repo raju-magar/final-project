@@ -1,6 +1,14 @@
+import { motion } from "framer-motion";
+
 export default function Landing() {
     return (
-        <>
+        <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.6 }}
+        >
+
         {/* Hero Section */}
         <section className="relative min-h-screen bg-cover bg-center flex flex-col items-center 
         justify-center text-white text-center px-4" style={{ backgroundImage: 'url(/public/hero-bg.png)' }} id="home">
@@ -16,10 +24,10 @@ export default function Landing() {
                 
                 {/* CTA Buttons */}
                 <div className="flex gap-4 justify-center mt-4" data-aos="Zoom-in" data-aos-delay="400">
-                    <button className="bg-yellow-500 text-black px-6 py-3 rounded-full text-lg font-bold shadow-lg transition transform hover:scale=105">
+                    <button className="bg-yellow-500 text-black px-6 py-3 rounded-full text-lg font-bold shadow-lg transition transform hover:scale-105">
                         Browse Jobs
                     </button>
-                    <button className="border-2 border-white tex-white px-6 py-3 rounded-full text-lg font-bold shadow-lg transition transform hover:scale-105">
+                    <button className="border-2 border-white text-white px-6 py-3 rounded-full text-lg font-bold shadow-lg transition transform hover:scale-105">
                         Post a Job
                     </button>
                 </div>
@@ -38,7 +46,7 @@ export default function Landing() {
         <section className="bg-white text-gray-800 py-16 px-4" id="features" data-aos="fade-up">
             <div className="max-w-6xl mx-auto text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose careerVibe?</h2>
-                <p className="text=lg tex-gray-600">Empowering jpb Seekers and employers with simple, smart tools.</p>
+                <p className="text-lg text-gray-600">Empowering jpb Seekers and employers with simple, smart tools.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl ma-auto">
@@ -60,7 +68,6 @@ export default function Landing() {
                 </div>
             </div>
         </section>
-
-        </>
+        </motion.div>
     );
 }
