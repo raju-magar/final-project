@@ -1,53 +1,68 @@
-import { useState, } from "react";
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import careerVibeLogo from '../assets/careervibe-logo.png';
 
-export default function Navbar({ isDark, setIsDark}) {
-  const [isOpen, setIsOpen]= useState(false);
+export default function Navbar({ isDark, setIsDark }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
-  
-  return (
-    <nav className="bg-white/20 backdrop-blur-md dark:bg-gray-800/30 text-white fixed top-0 w-full z-50 shadow-md">
+  useEffect(() => {
+    setIsOpen(false); // Close mobile menu on route change
+  }, [location]);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return(
+    <nav className={`backdrop-blur-lg fixed top-0 w-full z-50 shadow-md transition-colors duration-300 ${isDark ? "bg-[rgba(31,41,55,0.8)] text-white" : "bg-[rgba(255,255,255,0.7)] text-black"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="text-2xl font-bold tracking-wide animate__animated animate__fadeInLeft">
-            career<span className="text-yellow-300">Vibe</span>
-          </div>
-          {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-6 text-lg animate__animated animate__fadeInDown">
-            <Link to="/home" className="relative group">Home<span className="absolute left-0 -button-1 w-0 h-0.5 bg-yellow-300 transition-all group-hover:w-full"></span></Link>
-            <Link to="/about" className="hover:text-yellow-300 transition-all">About</Link>
-            <Link to="/jobs" className="hover:text-yellow-300 transition-all">Jobs</Link>
-            <Link to="/contact" className="hover:text-yellow-300 transition-all">Contact</Link>
-            <Link to="/login" className="hover:text-yellow-300 transition-all">Login</Link>
-            <Link to="/register" className="hover:text-yellow-300 transition-all">Register</Link>
-          </div>
+          
+        {/* Logo and Text */}
+        <Link to="/" className="flex items-center space-x-2">
+        <img src={careerVibeLogo} alt="CareerVibe Logo" className="h-10 w-10 object-contain" />
+        <span className="text-2xl font-bold tracking-wide">career<span className="text-yellow-300">Vibe</span></span>
+        </Link> 
 
-          {/* dark Mode Toggle Button */}
-          <button onClick={() => setIsDark(!isDark)} className={`ml-4 px-4 py-1 border border-white rounded-full shadow-md transition-all duration-300
-            ${isDark ? "bg-yellow-300 text-black" : "bg-transparent hover:bg-white hover:text-black"}
-            `}>{isDark ?"🌞" : "🌙"}
+          {/* Desktop Links */}
+          <div className="hidden md:flex space-x-6 text-lg">
+            {["home", "jobs", "about", "contact", "login", "register"].map((page) => {
+              return (
+              <Link key={page} to={`/${page}`} className="px-4 py-3 rounded-md hover:bg-yellow-300 hover:text-black transition-colors duration-200 hover:scale-110">
+                {page.charAt(0).toUpperCase() + page.slice(1)}
+              </Link>
+              );
+            })}
+          </div>         
+
+          {/* Theme Toggle */}
+          <button onClick={() => setIsDark(!isDark)} className={`ml-4 px-4 py-1 border border-white rounded-full shadow-md transition-transform duration-300 ${isDark ? "bg-yellow-300 text-black hover:scale-110" : "bg-transparent hover:bg-white hover:text-black hover:scale-110"}`} aria-label="Toggle Dark Mode">
+            {isDark ? "🌞": "🌙"}
           </button>
 
-            {/* Mobile Toggle */}
+          {/* Mobile Toggle */}
           <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-white focus:outline-none">
-              {isOpen ? '✖' : '☰'}
+            <button onClick={() => setIsOpen(!isOpen)} className={`text-2xl focus:outline-none transition-colors duration-300 ${isDark ? "text-yellow-300" : "text-black"}`} aria-label="Toggle menu">
+              {isOpen ? "✖" : "☰"}
             </button>
           </div>
         </div>
       </div>
-
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-blue-700 text-white space-y-2 p-4 animate__animated animate__fadeInDown">
-          <Link to="/" className="block">Home</Link>
-          <Link to="/about" className="block">About</Link>
-          <Link to="/jobs" className="block">Jobs</Link>
-          <Link to="/contact" className="block">Contact</Link>
-          <Link to="/login" className="block">Login</Link>
-          <Link to="/register" className="block">Register</Link>
+        <div className={`md:hidden bg-blue-700 text-white p-4 space-y-2 transition-transform duration-300 ease-in-out transform origin-top ${isOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0 pointer-events-none"}`}>
+          {["home", "jobs", "about", "contact", "login", "register"].map((page) => (
+            <Link key={page} to={`/${page}`} className="block px-4 py-2 rounded-md hover:bg-yellow-300 hover:text-black transition-colors duration-200">
+              {page.charAt(0).toUpperCase() + page.slice(1)}
+            </Link>
+          ))}
         </div>
       )}
+
     </nav>
   );
 }

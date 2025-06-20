@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import careerVibeLogo from "../assets/careervibe-logo.png";
 
 export default function Landing() {
     return (
@@ -11,7 +12,7 @@ export default function Landing() {
 
         {/* Hero Section */}
         <section className="relative min-h-screen bg-cover bg-center flex flex-col items-center 
-        justify-center text-white text-center px-4" style={{ backgroundImage: 'url(/public/hero-bg.png)' }} id="home">
+        justify-center text-white text-center px-4" style={{ backgroundImage: "url('/hero-bg.png')" }} id="home">
             {/* Dark overlay */}
             <div className="absolute inset-0 bg-black opacity-60 z-0"></div>
 
@@ -42,19 +43,16 @@ export default function Landing() {
                 </a>
             </div>
         </section>
-        {/* Features Section */}
-        <section className="bg-white text-gray-800 py-16 px-4" id="features" data-aos="fade-up">
-            <div className="max-w-6xl mx-auto text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose careerVibe?</h2>
-                <p className="text-lg text-gray-600">Empowering jpb Seekers and employers with simple, smart tools.</p>
+        {/* Features Section( Trusted by Section ) */}
+        <section className="py-16 bg-gray-50 text-center" id="features" data-aos="fade-up">
+            <div className="max-w-6xl mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold mb-10">Trusted bt top Companies</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl ma-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <div className="bg-gray-100 p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300">
-                    <h3 className="text-x; font-semibold mb-2">Smart Job Search</h3>
-                    <p className="text-gray-700">
-                        Advanced filters help ypu fond the jpb that fits you best.
-                    </p>
+                    <h3 className="text-xl; font-semibold mb-4">Smart Job Search</h3>
+                    <p className="text-gray-700 mt-4">Trusted by Thousands os users across Nepal.</p>
                 </div>
 
                 <div className="bg-gray-100 p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300">
