@@ -1,11 +1,11 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Eye, EyeOff, Mail, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react"
+import { Eye, EyeOff, User, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react"
 
 export default function Login() {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -23,11 +23,9 @@ export default function Login() {
 
   const validateForm = () => {
     const newErrors = {}
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Invalid email format"
-    }
+    if (!formData.username) {
+      newErrors.username = "Username is required"
+    } 
     if (!formData.password) {
       newErrors.password = "Password is required"
     } else if (formData.password.length < 6) {
@@ -98,33 +96,33 @@ export default function Login() {
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
+            {/* Username Field */}
             <motion.div variants={itemVariants} className="group">
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="Username" className="block text-sm font-semibold text-gray-700 mb-2">
+                Username
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
                 <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  placeholder="Enter your email"
+                  type="text"
+                  name="username"
+                  id="username"
+                  placeholder="Enter your username"
                   autoComplete="username"
                   className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 ${
-                    errors.email
+                    errors.username
                       ? "border-red-500 bg-red-50"
                       : "border-gray-200 focus:border-purple-500 bg-gray-50 focus:bg-white"
                   }`}
-                  value={formData.email}
+                  value={formData.username}
                   onChange={handleChange}
                 />
-                {formData.email && !errors.email && (
+                {formData.username && !errors.username && (
                   <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
                 )}
               </div>
               <AnimatePresence>
-                {errors.email && (
+                {errors.username && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -132,7 +130,7 @@ export default function Login() {
                     className="flex items-center mt-2 text-red-600 text-sm"
                   >
                     <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.email}
+                    {errors.username}
                   </motion.div>
                 )}
               </AnimatePresence>
