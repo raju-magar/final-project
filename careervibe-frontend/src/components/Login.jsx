@@ -1,56 +1,65 @@
-
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Eye, EyeOff, User, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff, User, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Added for navigation
 
 export default function Login() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate(); // Initialized navigate hook
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
     if (!formData.username) {
-      newErrors.username = "Username is required"
-    } 
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
+      newErrors.username = "Username is required";
     }
-    return newErrors
-  }
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    return newErrors;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const formErrors = validateForm()
+    e.preventDefault();
+    const formErrors = validateForm();
 
     if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors)
-      return
+      setErrors(formErrors);
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    console.log("Login successful:", formData)
-    setIsSubmitting(false)
-  }
+    // Simulate successful login with token
+    if (formData.username === "admin@gmail.com" && formData.password === "admin@123") {
+      localStorage.setItem("token", "fake-token"); // Set token
+      console.log("Login successful"); // Removed formData for security
+      navigate("/dashboard"); // Redirect to dashboard
+    } else {
+      setErrors({ general: "Invalid username or password" });
+    }
+
+    setIsSubmitting(false);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -62,7 +71,7 @@ export default function Login() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -74,17 +83,15 @@ export default function Login() {
         stiffness: 100,
       },
     },
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center px-4 py-12">
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-md">
-        {/* Login Card */}
         <motion.div
           variants={itemVariants}
           className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20"
         >
-          {/* Header */}
           <motion.div variants={itemVariants} className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <LogIn className="w-8 h-8 text-white" />
@@ -96,9 +103,8 @@ export default function Login() {
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
             <motion.div variants={itemVariants} className="group">
-              <label htmlFor="Username" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
                 Username
               </label>
               <div className="relative">
@@ -136,7 +142,6 @@ export default function Login() {
               </AnimatePresence>
             </motion.div>
 
-            {/* Password Field */}
             <motion.div variants={itemVariants} className="group">
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
@@ -177,10 +182,20 @@ export default function Login() {
                     {errors.password}
                   </motion.div>
                 )}
+                {errors.general && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center mt-2 text-red-600 text-sm"
+                  >
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {errors.general}
+                  </motion.div>
+                )}
               </AnimatePresence>
             </motion.div>
 
-            {/* Remember Me & Forgot Password */}
             <motion.div variants={itemVariants} className="flex items-center justify-between">
               <label className="flex items-center">
                 <input
@@ -196,7 +211,6 @@ export default function Login() {
               </a>
             </motion.div>
 
-            {/* Submit Button */}
             <motion.button
               variants={itemVariants}
               type="submit"
@@ -223,7 +237,6 @@ export default function Login() {
             </motion.button>
           </form>
 
-          {/* Footer */}
           <motion.div variants={itemVariants} className="mt-8 text-center">
             <p className="text-gray-600 text-sm">
               Don't have an account?{" "}
@@ -236,7 +249,6 @@ export default function Login() {
             </p>
           </motion.div>
 
-          {/* Social Login */}
           <motion.div variants={itemVariants} className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -266,5 +278,5 @@ export default function Login() {
         </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }

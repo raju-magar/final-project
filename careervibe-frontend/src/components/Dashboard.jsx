@@ -13,12 +13,16 @@ export default function Dashboard() {
 
         // Here you'd fetch real data from backend
         setUser({
-            name: "Raju Magar",
-            email: "raju@example.com",
+            name: "bryan adams",
+            email: "brayan@example.com",
             appliedJobs: 5,
             savedJobs: 3,
         });
     }, []);
+
+    if (!user) {
+        return <div>Loading...</div>; // Handle Loading state 
+    }
 
     return (
         <AnimatePresence>
@@ -45,6 +49,11 @@ export default function Dashboard() {
                     </motion.div>
 
                     <motion.div className="bg-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition transform" whileHover={{ scale: 1.05 }}>
+                        <h3 className="text-xl font-semibold">saved jobs</h3>
+                        <p className="text-4xl font-bold mt-2">{user.savedJobs}</p>
+                    </motion.div>
+
+                    <motion.div className="bg-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition transform" whileHover={{ scale: 1.05 }}>
                         <h3 className="text-xl font-semibold">Email</h3>
                         <p className="mt-2 text-white/90">{user?.email}</p>
                     </motion.div>
@@ -56,6 +65,8 @@ export default function Dashboard() {
                         navigate("/login");
                     }} className="bg-red-500 hover:bg-red-600 transition text-white font-semibold px-6 py-3 rounded-xl shadow-xl">Logout</button>
                 </div>
+             </motion.div>
+             </div>
              </motion.div>
         </AnimatePresence>
     );
