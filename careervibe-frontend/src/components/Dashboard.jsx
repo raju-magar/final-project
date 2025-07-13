@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardCard from "../components/DashboardCard"; // Import the new component
-import SkeletonLoader from "../components/SkeletonLoader"; // Import the skeleton loader
+import DashboardCard from "../components/DashboardCard.jsx"; // Import the new component
+import SkeletonLoader from "../components/SkeletonLoader.jsx"; // Import the skeleton loader
 
 const containerVariants = {
     hidden: { opacity: 0 },
