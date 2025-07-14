@@ -46,18 +46,25 @@ export default function Login() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    // Simulate successful login with token
-    if (formData.username === "admin@gmail.com" && formData.password === "admin@123") {
-      localStorage.setItem("token", "fake-token"); // Set token
-      console.log("Login successful"); // Removed formData for security
-      navigate("/dashboard"); // Redirect to dashboard
-    } else {
-      setErrors({ general: "Invalid username or password" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors({ general: data.message || "Login failed" });
+      } else {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrors({ general: "server error, Please try again later" });
     }
-
     setIsSubmitting(false);
   };
 

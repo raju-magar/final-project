@@ -5,12 +5,13 @@ const User = require("../models/User");
 
 const router = express.Router();
 // Register Endpoint
-router.post("/register", async (req, res) => try {
-const { funnName, username, email, mobile, password, role } = req.body;
+router.post("/register", async (req, res) => {
+	try {
+const { fullName, username, email, mobile, password, role } = req.body;
 
 // Validate input
 if (!fullName || !username || !email || !mobile || !password || !role) {
-return res.status(400).json({ message: "All field are required" });
+return res.status(400).json({ message: "All fields are required" });
 }
 if (!["job-seeker", "employer"].includes(role)) {
 return res.status(400).json({ message: "Invalid role" });
@@ -32,16 +33,16 @@ const token = jwt.sign(
 	{ expiresIn: "1h" }, 
 );
 
-res.status(201).json({ token, user: user_id, fullName, emial, role } });
+res.status(201).json({ token, user: user._id, fullName: user.fullName, email: user.email, role: user.role  });
 } catch (error) {
-res.status(500).json({ message: " error.messgae });
+res.status(500).json({ message: error.message });
 }
 });
 // Login Endpoint
 router.post("/login", async (req, res) => {
 try {
-	const { email, password } = req.body;
-	const user = await User.findOne({ email });
+	const { username, password } = req.body;
+	const user = await User.findOne({ username });
 	if (!user) {
 		return res.status(400).json({ message: "Invalid credentials" });
 }
@@ -54,9 +55,9 @@ if (!isMatch) {
 const token = jwt.sign(
 	{ id: user._id, role: user.role },
 	process.env.JWT_SECRET || "your-secret-key",
-	{ expiresIn: "1h" },
+	{ expiresIn: "1h" }
 );
-	res.json({ token, user: user._id, fullName, uaername: user.username, email, role: user.role } });
+	res.json({ token, user: user._id, fullName: user.fullName, username: user.username, email: user.email, role: user.role });
 	} catch (error){
 	res.status(500).json({ message: error.message });
 }

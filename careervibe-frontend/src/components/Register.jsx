@@ -1,6 +1,6 @@
-
-import { useState, useEffect } from "react"
-import { Eye, EyeOff, User, Mail, Phone, Lock, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, User, Mail, Phone, Lock, CheckCircle, AlertCircle, Loader2, Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -10,110 +10,129 @@ export default function Register() {
     mobile: "",
     password: "",
     confirmPassword: "",
-  })
+    role: "job-seeker", // Added role with default value
+  });
 
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
-  const [formProgress, setFormProgress] = useState(0)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [formProgress, setFormProgress] = useState(0);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const navigate = useNavigate(); // Added for redirect after registration
 
   // Calculate form progress
   useEffect(() => {
-    const filledFields = Object.values(formData).filter((value) => value.trim() !== "").length
-    const progress = (filledFields / 6) * 100
-    setFormProgress(progress)
-  }, [formData])
+    const filledFields = Object.values(formData).filter((value) => value.trim() !== "").length;
+    const progress = (filledFields / 7) * 100; // Updated to 7 fields
+    setFormProgress(progress);
+  }, [formData]);
 
   // Calculate password strength
   useEffect(() => {
-    const password = formData.password
-    let strength = 0
-    if (password.length >= 8) strength += 25
-    if (/[A-Z]/.test(password)) strength += 25
-    if (/[0-9]/.test(password)) strength += 25
-    if (/[^A-Za-z0-9]/.test(password)) strength += 25
-    setPasswordStrength(strength)
-  }, [formData.password])
+    const password = formData.password;
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (/[A-Z]/.test(password)) strength += 25;
+    if (/[0-9]/.test(password)) strength += 25;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+    setPasswordStrength(strength);
+  }, [formData.password]);
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     // Enhanced validation
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required"
+      newErrors.fullName = "Full name is required";
     } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = "Full name must be at least 2 characters"
+      newErrors.fullName = "Full name must be at least 2 characters";
     }
 
     if (!formData.username.trim()) {
-      newErrors.username = "Username is required"
+      newErrors.username = "Username is required";
     } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters"
+      newErrors.username = "Username must be at least 3 characters";
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = "Username can only contain letters, numbers, and underscores"
+      newErrors.username = "Username can only contain letters, numbers, and underscores";
     }
 
     if (!formData.email) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address"
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.mobile) {
-      newErrors.mobile = "Mobile number is required"
+      newErrors.mobile = "Mobile number is required";
     } else if (!/^\d{10}$/.test(formData.mobile.replace(/\D/g, ""))) {
-      newErrors.mobile = "Mobile number must be exactly 10 digits"
+      newErrors.mobile = "Mobile number must be exactly 10 digits";
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
+      newErrors.password = "Password must be at least 8 characters";
     } else if (passwordStrength < 75) {
-      newErrors.password = "Password is too weak. Include uppercase, numbers, and special characters"
+      newErrors.password = "Password is too weak. Include uppercase, numbers, and special characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
-    return newErrors
-  }
+    if (!formData.role) {
+      newErrors.role = "Please select a role";
+    } else if (!["job-seeker", "employer"].includes(formData.role)) {
+      newErrors.role = "Invalid role selected";
+    }
+
+    return newErrors;
+  };
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error for the field being edited
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const formErrors = validateForm()
+    e.preventDefault();
+    const formErrors = validateForm();
 
     if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors)
-      return
+      setErrors(formErrors);
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // API call to register user
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      console.log("Registration successful:", formData)
-      setIsSuccess(true)
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
 
-      // Reset form after success
+      const data = await response.json();
+      // Store token in localStorage
+      localStorage.setItem("token", data.token);
+      setIsSuccess(true);
+
+      // Reset form and redirect after success
       setTimeout(() => {
         setFormData({
           fullName: "",
@@ -122,30 +141,32 @@ export default function Register() {
           mobile: "",
           password: "",
           confirmPassword: "",
-        })
-        setIsSuccess(false)
-        setFormProgress(0)
-      }, 3000)
+          role: "job-seeker",
+        });
+        setIsSuccess(false);
+        setFormProgress(0);
+        navigate("/"); // Redirect to Jobs page
+      }, 3000);
     } catch (error) {
-      console.error("Registration failed:", error)
+      setErrors({ submit: error.message });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength < 25) return "bg-red-500"
-    if (passwordStrength < 50) return "bg-orange-500"
-    if (passwordStrength < 75) return "bg-yellow-500"
-    return "bg-green-500"
-  }
+    if (passwordStrength < 25) return "bg-red-500";
+    if (passwordStrength < 50) return "bg-orange-500";
+    if (passwordStrength < 75) return "bg-yellow-500";
+    return "bg-green-500";
+  };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength < 25) return "Weak"
-    if (passwordStrength < 50) return "Fair"
-    if (passwordStrength < 75) return "Good"
-    return "Strong"
-  }
+    if (passwordStrength < 25) return "Weak";
+    if (passwordStrength < 50) return "Fair";
+    if (passwordStrength < 75) return "Good";
+    return "Strong";
+  };
 
   // Success screen
   if (isSuccess) {
@@ -163,7 +184,7 @@ export default function Register() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -216,6 +237,7 @@ export default function Register() {
                   }`}
                   value={formData.fullName}
                   onChange={handleChange}
+                  aria-label="Full name"
                 />
                 {formData.fullName && !errors.fullName && (
                   <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
@@ -249,6 +271,7 @@ export default function Register() {
                   }`}
                   value={formData.username}
                   onChange={handleChange}
+                  aria-label="Username"
                 />
                 {formData.username && !errors.username && (
                   <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
@@ -281,6 +304,7 @@ export default function Register() {
                   }`}
                   value={formData.email}
                   onChange={handleChange}
+                  aria-label="Email address"
                 />
                 {formData.email && !errors.email && (
                   <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
@@ -313,6 +337,7 @@ export default function Register() {
                   }`}
                   value={formData.mobile}
                   onChange={handleChange}
+                  aria-label="Mobile number"
                 />
                 {formData.mobile && !errors.mobile && (
                   <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
@@ -322,6 +347,40 @@ export default function Register() {
                 <div className="flex items-center mt-2 text-red-600 text-sm animate-shake">
                   <AlertCircle className="w-4 h-4 mr-1" />
                   {errors.mobile}
+                </div>
+              )}
+            </div>
+
+            {/* Role Selection */}
+            <div className="group">
+              <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
+                I am a
+              </label>
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <select
+                  name="role"
+                  id="role"
+                  className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 ${
+                    errors.role
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-200 focus:border-purple-500 bg-gray-50 focus:bg-white"
+                  }`}
+                  value={formData.role}
+                  onChange={handleChange}
+                  aria-label="Select your role"
+                >
+                  <option value="job-seeker">Job Seeker</option>
+                  <option value="employer">Employer</option>
+                </select>
+                {formData.role && !errors.role && (
+                  <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
+              </div>
+              {errors.role && (
+                <div className="flex items-center mt-2 text-red-600 text-sm animate-shake">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.role}
                 </div>
               )}
             </div>
@@ -346,11 +405,13 @@ export default function Register() {
                   }`}
                   value={formData.password}
                   onChange={handleChange}
+                  aria-label="Password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -404,11 +465,13 @@ export default function Register() {
                   }`}
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  aria-label="Confirm password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors"
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -421,11 +484,20 @@ export default function Register() {
               )}
             </div>
 
+            {/* Submit Error */}
+            {errors.submit && (
+              <div className="flex items-center mt-2 text-red-600 text-sm animate-shake">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.submit}
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              aria-label="Create account"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center">
@@ -458,5 +530,5 @@ export default function Register() {
         </div>
       </div>
     </div>
-  )
+  );
 }
