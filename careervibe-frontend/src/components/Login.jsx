@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, User, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -12,7 +12,7 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate(); // Initialized navigate hook
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,10 +47,11 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include", // Add this to handle session cookies
       });
 
       const data = await res.json();
@@ -58,16 +59,18 @@ export default function Login() {
       if (!res.ok) {
         setErrors({ general: data.message || "Login failed" });
       } else {
-        localStorage.setItem("token", data.token);
+        // No token storage needed; cookie is set by the backend
         navigate("/dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrors({ general: "server error, Please try again later" });
+      setErrors({ general: "Server error, please try again later" });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
+  // Rest of the code (UI, animations, etc.) remains unchanged
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {

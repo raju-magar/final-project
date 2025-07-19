@@ -115,11 +115,11 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
-      // API call to register user
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -128,8 +128,6 @@ export default function Register() {
       }
 
       const data = await response.json();
-      // Store token in localStorage
-      localStorage.setItem("token", data.token);
       setIsSuccess(true);
 
       // Reset form and redirect after success
