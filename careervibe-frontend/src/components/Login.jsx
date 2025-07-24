@@ -57,9 +57,10 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
+        console.log("Login failed:", data);
         setErrors({ general: data.message || "Login failed" });
       } else {
-        // No token storage needed; cookie is set by the backend
+        console.log("login successful, redirecting to dashboard");
         navigate("/dashboard");
       }
     } catch (err) {

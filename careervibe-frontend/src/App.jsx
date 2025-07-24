@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+
 import Landing from './components/Landing.jsx';
 import Navbar from "./components/Navbar.jsx";
 import Home from "./components/Home.jsx";
