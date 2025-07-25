@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import { Routes, Route } from "react-router-dom";
 
 import Landing from './components/Landing.jsx';
 import Navbar from "./components/Navbar.jsx";
@@ -12,10 +11,11 @@ import About from "./components/About.jsx";
 import Contact from "./components/Contact.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
+import PostJob from "./components/PostJob.jsx";
 
 export default function App() {
   const [isDark, setIsDark] = useState(false);
-  
+
   return (
     <>
       <Navbar isDark={isDark} setIsDark={setIsDark} />
@@ -28,12 +28,23 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        {/* Add a fallback route for unmatched paths */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+        path="/Post-job"
+        element={
+          <PrivateRoute>
+          <postJob />
+          </PrivateRoute>
+        }
+        />
         <Route path="*" element={<div>404 - Not Found</div>} />
-
-        {/*  🔒 protected Route */}
-        <Route path="/dashboard" element={
-          <PrivateRoute><Dashboard /></PrivateRoute>} />
       </Routes>
     </>
   );

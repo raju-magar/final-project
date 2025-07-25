@@ -1,34 +1,30 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-export default function PrivateRoute({ children }) {
-  const [authenticated, setAuthenticated] = useState(null); // null = loading
+const PrivateRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkAuth = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/users/check-session", {
-          method: "GET",
-          credentials: "include", // Include session cookie
+          credentials: "include",
         });
 
-        if (res.status === 200) {
-          setAuthenticated(true);
-        } else {
-          setAuthenticated(false);
-        }
+        if (!res.ok) throw new Error("Session check failed");
+        setIsAuthenticated(true);
       } catch (err) {
-        console.error("Session check failed:", err);
-        setAuthenticated(false);
+        console.error("Auth check error:", err);
+        setIsAuthenticated(false);
       }
     };
 
-    checkSession();
+    checkAuth();
   }, []);
 
-  if (authenticated === null) {
-    return <div>Loading...</div>; // or a spinner
-  }
+  if (isAuthenticated === null) return <div>Loading...</div>;
 
-  return authenticated ? children : <Navigate to="/login" />;
-}
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+export default PrivateRoute;

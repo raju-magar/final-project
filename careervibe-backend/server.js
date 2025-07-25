@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
@@ -15,17 +16,30 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 
+// Session management
+app.use(session({
+    secret: process.env.session_secret || "supersecretkey", 
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: false, // Set to true if using HTTPS
+        maxAge: 1000 * 60 * 60 // 1 hour
+    }
+}));
+
+// Cors middleware (After session)
+app.use(cors({
+    origin: "http://localhost:5173", // frontend origin (vite default)
+    credentials: true, // allows cookies (important for auth)
+}));
+
 // Set headers for proper charset and cors
 app.use((req, res, next) => {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     next();
 });
 
-// Add CORS middleware
-app.use(cors({
-    origin: "http://localhost:5173", // frontend origin (vite default)
-    credentials: true, // allows cookies (important for auth)
-}));
 
 // Routes
 app.use("/api/users", userRoutes);

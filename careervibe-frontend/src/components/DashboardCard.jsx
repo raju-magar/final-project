@@ -15,15 +15,15 @@ export default function DashboardCard({ title, value, icon, onClick }) {
             initial="hidden"
             animate="visible"
             whileHover="hover"
-            className={`bg-white/20 p-6 rounded-2xl shadow-lg transition-all duration-300 ease-in-out
+            className={`bg-white p-6 rounded-2xl shadow-lg transition-all duration-300 ease-in-out
                 ${isClickable ? 'cursor-pointer' : ''}`}
             onClick={onClick}
         >
             <div className="flex items-center mb-3">
                 {icon && <span className="text-4xl mr-4">{icon}</span>}
-                <h3 className="text-xl font-semibold text-white/95">{title}</h3>
+                <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
             </div>
-            <p className="text-5xl font-bold text-white">{value}</p>
+            <p className="text-5xl font-bold text-blue-600">{value}</p>
         </motion.div>
     );
 }

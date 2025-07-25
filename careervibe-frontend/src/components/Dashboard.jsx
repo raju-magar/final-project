@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SkeletonLoader from "./SkeletonLoader";
+import JobSeekerDashboard from "./JobSeekerDashboard";
+import EmployerDashboard from "./EmployerDashboard";
+import DashboardLayout from "./DashboardLayout"; // ✅ Now imported cleanly
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -14,17 +18,16 @@ export default function Dashboard() {
           method: "GET",
           credentials: "include",
         });
-        console.log("Session check status:", res.status, res.statusText);
+
         if (res.status === 401) {
-          console.error("Session check: Unauthorized");
           setError("Session invalid or expired");
           navigate("/login");
           return;
         }
+
         if (!res.ok) throw new Error("Failed to check session");
         fetchUser();
       } catch (error) {
-        console.error("Session check error:", error.message);
         setError(error.message);
         navigate("/login");
       }
@@ -36,25 +39,21 @@ export default function Dashboard() {
           method: "GET",
           credentials: "include",
         });
-        console.log("Profile request headers:", {
-          cookie: res.headers.get('cookie') || 'No cookie sent'
-        });
-        console.log("Response status:", res.status, res.statusText);
+
         if (res.status === 401) {
-          console.error("Unauthorized: Invalid or missing session");
           setError("Please log in to continue");
+          navigate("/login");
           return;
         }
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          console.log("Error response:", errorData);
           throw new Error(`Failed to fetch user: ${res.status} ${res.statusText}`);
         }
+
         const data = await res.json();
-        console.log("User data:", data);
         setUser(data);
       } catch (error) {
-        console.error("Fetch error:", error.message);
         setError(error.message);
       } finally {
         setLoading(false);
@@ -65,22 +64,61 @@ export default function Dashboard() {
   }, [navigate]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <SkeletonLoader type="dashboard" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <p>Error loading user data.</p>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">User Data Not Available</h2>
+          <p className="text-gray-600 mb-6">Unable to load your profile information.</p>
+          <button 
+            onClick={() => navigate("/login")} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  if (user.role === "job-seeker") {
-    return <JobSeekerDashboard user={user} />;
-  } else if (user.role === "employer") {
-    return <EmployerDashboard user={user} />;
-  } else {
-    return <p>Unknown user role</p>;
-  }
+  return (
+    <DashboardLayout user={user}>
+      {user.role === "job-seeker" ? (
+        <JobSeekerDashboard user={user} />
+      ) : user.role === "employer" ? (
+        <EmployerDashboard user={user} />
+      ) : (
+        <div className="text-center p-6">
+          Unknown user role: {user.role || "undefined"}
+        </div>
+      )}
+    </DashboardLayout>
+  );
 }
