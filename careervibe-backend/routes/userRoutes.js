@@ -18,5 +18,4 @@ router.get("/check-session", authMiddleware, (req, res) => {
   res.status(200).json({ user: req.user });
 });
 
-
 module.exports = router;

@@ -21,6 +21,7 @@ export default function App() {
       <Navbar isDark={isDark} setIsDark={setIsDark} />
 
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/home" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
@@ -28,6 +29,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+
+        {/* Protected Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -36,15 +39,19 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Protected Post Job Route */}
         <Route
-        path="/Post-job"
-        element={
-          <PrivateRoute>
-          <postJob />
-          </PrivateRoute>
-        }
+          path="/dashboard/post-job"
+          element={
+            <PrivateRoute>
+              <PostJob />
+            </PrivateRoute>
+          }
         />
-        <Route path="*" element={<div>404 - Not Found</div>} />
+
+        {/* Catch-all route for 404 */}
+        <Route path="*" element={<div className="text-center p-6 text-xl">404 - Not Found</div>} />
       </Routes>
     </>
   );

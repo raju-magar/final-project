@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "./SkeletonLoader";
 import JobSeekerDashboard from "./JobSeekerDashboard";
 import EmployerDashboard from "./EmployerDashboard";
-import DashboardLayout from "./DashboardLayout"; // ✅ Now imported cleanly
+import DashboardLayout from "./DashboardLayout";
+import RoleBasedDashboard from "./RoleBasedDashboard";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -11,57 +14,62 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch user profile
+  const fetchUser = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/profile`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (res.status === 401) {
+        throw new Error("Please log in to continue");
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(`Failed to fetch user: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      setUser(data);
+    } catch (err) {
+      setError(err.message);
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check session
+  const checkSession = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/check-session`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (res.status === 401) {
+        throw new Error("Session invalid or expired");
+      }
+
+      if (!res.ok) {
+        throw new Error("Failed to check session");
+      }
+
+      await fetchUser();
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      navigate("/login");
+    }
+  };
+
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/users/check-session", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (res.status === 401) {
-          setError("Session invalid or expired");
-          navigate("/login");
-          return;
-        }
-
-        if (!res.ok) throw new Error("Failed to check session");
-        fetchUser();
-      } catch (error) {
-        setError(error.message);
-        navigate("/login");
-      }
-    };
-
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/users/profile", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (res.status === 401) {
-          setError("Please log in to continue");
-          navigate("/login");
-          return;
-        }
-
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(`Failed to fetch user: ${res.status} ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        setUser(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     checkSession();
   }, [navigate]);
+
+  // ===== RENDERING HANDLERS =====
 
   if (loading) {
     return (
@@ -109,16 +117,8 @@ export default function Dashboard() {
   }
 
   return (
-    <DashboardLayout user={user}>
-      {user.role === "job-seeker" ? (
-        <JobSeekerDashboard user={user} />
-      ) : user.role === "employer" ? (
-        <EmployerDashboard user={user} />
-      ) : (
-        <div className="text-center p-6">
-          Unknown user role: {user.role || "undefined"}
-        </div>
-      )}
-    </DashboardLayout>
+     <DashboardLayout user={user}>
+    <RoleBasedDashboard user={user} />
+  </DashboardLayout>
   );
 }

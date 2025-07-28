@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import DashboardCard from "./DashboardCard";
 import ProfileView from "./ProfileView";
 import { Briefcase, Users, Building, Bell, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Tab navigation component (same as in JobSeekerDashboard)
 const DashboardTabs = ({ activeTab, setActiveTab, tabs }) => {
@@ -28,6 +30,7 @@ const DashboardTabs = ({ activeTab, setActiveTab, tabs }) => {
 
 export default function EmployerDashboard({ user }) {
   const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
   
   // Dashboard tabs configuration
   const tabs = [
@@ -96,15 +99,17 @@ export default function EmployerDashboard({ user }) {
       case "jobs":
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Your Posted Jobs</h2>
-            <div className="bg-white rounded-xl shadow-md p-6">
-              {/* Placeholder for jobs list */}
-              <p className="text-gray-500">You haven't posted any jobs yet.</p>
-              <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                Post a New Job
-              </button>
-            </div>
-          </div>
+        <h2 className="text-2xl font-bold mb-6">Your Posted Jobs</h2>
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <p className="text-gray-500">You haven't posted any jobs yet.</p>
+          <button
+            onClick={() => navigate("/dashboard/post-job")}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Post a New Job
+          </button>
+        </div>
+      </div>
         );
       case "applicants":
         return (

@@ -5,6 +5,7 @@ const session = require("express-session");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
+const jobRoutes = require("./routes/jobRoutes");
 
 dotenv.config();
 const app = express();
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/jobs", jobRoutes);
 
 // 404 Handler
 app.use((req, res) => {
