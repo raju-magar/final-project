@@ -6,8 +6,8 @@ export default function RoleBasedDashboard({ user }) {
         return <p>No Role found</p>;
     }
 
-    switch (user.role) {
-        case "Job-seeker":
+    switch (user.role.toLowerCase()) {
+        case "job-seeker":
             return <JobSeekerDashboard user={user} />;
             case "employer":
                 return <EmployerDashboard user={user} />;

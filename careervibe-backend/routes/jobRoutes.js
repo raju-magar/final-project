@@ -1,24 +1,38 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const Job = require("../models/Job");
-const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
+const { verifyToken } = require("../middleware/authMiddleware");
 
-// [GET] Fetch all jobs
-router.get("/", async (req, res) => {
-    try {
-        const jobs = await Job.find();
-        res.status(200).json(jobs);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const { postedBy } = req.query;
+    const jobs = postedBy
+      ? await Job.find({ postedBy })
+      : await Job.find(); // No filter if not employer
+
+    res.json({ jobs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch jobs" });
+  }
 });
 
-// [POST] Add a new job
-router.post("/", authMiddleware, async (req, res) => {
-  try {
-    const { title, description, location, company, salary, type } = req.body;
 
-    // req.user should be set by authMiddleware if user is logged in
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      location,
+      company,
+      salary,
+      jobType,
+      experienceLevel,
+      applicationDeadline,
+      contactEmail,
+    } = req.body;
+
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -29,8 +43,11 @@ router.post("/", authMiddleware, async (req, res) => {
       location,
       company,
       salary,
-      type,
-      postedBy: req.user._id,  // Assign logged-in user's id here
+      jobType,
+      experienceLevel,
+      applicationDeadline,
+      contactEmail,
+      postedBy: req.user._id,
     });
 
     await newJob.save();
@@ -38,7 +55,61 @@ router.post("/", authMiddleware, async (req, res) => {
     res.status(201).json({ message: "Job created successfully", job: newJob });
   } catch (error) {
     console.error("Error creating job:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to create job", error: error.message });
+  }
+});
+
+router.put("/:id", verifyToken, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ message: "Invalid Job ID" });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.postedBy.toString() !== req.user._id) {
+      return res.status(403).json({ message: "Not authorized to update this job" });
+    }
+
+    Object.assign(job, req.body);
+    await job.save();
+
+    res.json({ message: "Job updated successfully", job });
+  } catch (error) {
+    console.error("Error updating job:", error);
+    res.status(500).json({ message: "Failed to update job", error: error.message });
+  }
+});
+
+// DELETE /api/jobs/:id
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ message: "Invalid Job ID" });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Ensure user is the owner
+    if (job.postedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await job.deleteOne();  // ✅ use deleteOne instead of remove()
+    res.json({ message: "Job deleted successfully" });
+  } catch (error) {
+    console.error("Delete job error:", error);
+    res.status(500).json({ message: "Server error while deleting job", error: error.message });
   }
 });
 

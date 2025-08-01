@@ -29,7 +29,6 @@ export default function Navbar({ isDark, setIsDark }) {
   const userMenuItems = [
     { name: "Profile", path: "/profile", icon: User },
     { name: "Dashboard", path: "/dashboard", icon: User },
-    { name: "Logout", path: "/logout", icon: LogOut },
   ]
 
   useEffect(() => {

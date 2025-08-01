@@ -9,6 +9,7 @@ const PrivateRoute = ({ children }) => {
     const checkAuth = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/users/check-session", {
+          method: "GET",
           credentials: "include",
         });
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import DashboardLayout from "./components/DashboardLayout.jsx";
 
 import Landing from './components/Landing.jsx';
 import Navbar from "./components/Navbar.jsx";
@@ -16,43 +17,42 @@ import PostJob from "./components/PostJob.jsx";
 export default function App() {
   const [isDark, setIsDark] = useState(false);
 
+  // TODO: Get user info from context or state to pass below if needed
+  const user = null; // Replace with actual user object
+
   return (
     <>
       <Navbar isDark={isDark} setIsDark={setIsDark} />
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+      {/* Add pt-16 here to push content below fixed navbar */}
+      <div className="pt-16">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
 
-        {/* Protected Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
+          {/* Protected Dashboard Routes */}
+          <Route
+            path="/dashboard/*"
+            element={
+              <PrivateRoute>
+                  <Routes>
+                    <Route index element={<Dashboard />} />
+                    <Route path="post-job" element={<PostJob />} />
+                  </Routes>
+              </PrivateRoute>
+            }
+          />
 
-        {/* Protected Post Job Route */}
-        <Route
-          path="/dashboard/post-job"
-          element={
-            <PrivateRoute>
-              <PostJob />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Catch-all route for 404 */}
-        <Route path="*" element={<div className="text-center p-6 text-xl">404 - Not Found</div>} />
-      </Routes>
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<div className="text-center p-6 text-xl">404 - Not Found</div>} />
+        </Routes>
+      </div>
     </>
   );
 }
