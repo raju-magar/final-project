@@ -1,71 +1,92 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { verifyToken } = require("../middleware/authMiddleware");
+const { checkSession } = require("../middleware/checkSession");
 
 const router = express.Router();
 
 // Register
 router.post("/register", async (req, res) => {
-  const { username, email, password, role } = req.body;
+  try {
+    const { username, email, password, role } = req.body;
 
-  const existingUser = await User.findOne({ email });
-  if (existingUser) return res.status(400).json({ message: "Email already registered" });
+    // Check if username OR email already exists
+    const existingUser = await User.findOne({ 
+      $or: [{ username }, { email }]
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username or Email already registered" });
+    }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ username, email, password: hashedPassword, role });
-  await user.save();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, email, password: hashedPassword, role });
+    await user.save();
 
-  res.status(201).json({ message: "User registered" });
+    // Set user session after registration
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    };
+
+    res.status(201).json({ message: "User registered", user: req.session.user });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Login
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ message: "Invalid email or password" });
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
 
-  const token = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "7d" });
-  res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "Lax",
-    secure: false, // true in production with https
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    // Set user session after successful login
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    };
 
-  res.status(200).json({ message: "Login successful", user });
+    await req.session.save(); // save session explicitly
+
+    console.log('Session set after login:', req.session.user);
+    res.json({ message: "Login successful", user: req.session.user });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Check session
-router.get("/check-session", verifyToken, async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password");
-  res.status(200).json({ user });
-});
-
-// @route GET /api/users/profile
-// @desc Get user profile
-// @access Private
-router.get("/profile", verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+router.get("/check-session", (req, res) => {
+  console.log('Session:', req.session);
+  if (req.session.user) {
+    res.json({ user: req.session.user, isAuthenticated: true });
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
   }
 });
 
 // Logout
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.json({ message: "Logged out" });
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ message: "Logout failed" });
+    res.clearCookie("connect.sid"); // clear session cookie
+    res.json({ message: "Logged out" });
+  });
 });
 
 module.exports = router;

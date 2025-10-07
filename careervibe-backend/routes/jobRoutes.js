@@ -2,9 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Job = require("../models/Job");
 const router = express.Router();
-const { verifyToken } = require("../middleware/authMiddleware");
+const { checkSession } = require("../middleware/checkSession");
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/middleware", checkSession, async (req, res) => {
   try {
     const { postedBy } = req.query;
     const jobs = postedBy
@@ -19,7 +19,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", checkSession, async (req, res) => {
   try {
     const {
       title,
@@ -59,7 +59,7 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
-router.put("/:id", verifyToken, async (req, res) => {
+router.put("/:id", checkSession, async (req, res) => {
   try {
     const jobId = req.params.id;
 
@@ -87,7 +87,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 });
 
 // DELETE /api/jobs/:id
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", checkSession, async (req, res) => {
   try {
     const jobId = req.params.id;
 

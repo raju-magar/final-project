@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, User, Lock, LogIn, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  User,
+  Lock,
+  LogIn,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -9,6 +17,46 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  // Prevent multiple redirects in Strict Mode
+  const hasCheckedSession = useRef(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      if (hasCheckedSession.current) return; // prevent double run
+      hasCheckedSession.current = true;
+
+      try {
+        const res = await fetch(
+          "http://localhost:5000/api/users/check-session",
+          {
+            method: "GET",
+            credentials: "include", // send cookies
+          }
+        );
+
+        if (!res.ok) {
+          console.log("No active session yet");
+          return;
+        }
+
+        const data = await res.json();
+        if (isMounted && data.user) {
+          console.log("✅ Session active, redirecting...");
+          navigate("/dashboard", { replace: true });
+        }
+      } catch (err) {
+        console.log("Session check failed:", err.message);
+      }
+    };
+
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,7 +68,8 @@ export default function Login() {
     const newErrors = {};
     if (!formData.username) newErrors.username = "Username is required";
     if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    else if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
     return newErrors;
   };
 
@@ -38,7 +87,7 @@ export default function Login() {
       const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ allows cookie from backend
+        credentials: "include", // send cookies
         body: JSON.stringify(formData),
       });
 
@@ -47,10 +96,8 @@ export default function Login() {
       if (!res.ok) {
         setErrors({ general: data.message || "Login failed" });
       } else {
-        // Store the token in localStorage
-        localStorage.setItem("token", data.token); // Ensure the token is stored
         console.log("✅ Login successful. Redirecting...");
-        navigate("/dashboard"); // Redirect to dashboard
+        navigate("/dashboard");
       }
     } catch (err) {
       console.error("❌ Login error:", err);
@@ -60,7 +107,7 @@ export default function Login() {
     }
   };
 
-  // Motion variants for animations (same as your original)
+  // Motion variants for animations
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -69,7 +116,6 @@ export default function Login() {
       transition: { duration: 0.6, staggerChildren: 0.1 },
     },
   };
-
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -81,7 +127,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center px-4 py-12">
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-md">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md"
+      >
         <motion.div
           variants={itemVariants}
           className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20"
@@ -101,11 +152,14 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
             <motion.div variants={itemVariants} className="group">
-              <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="username"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Username
               </label>
               <div className="relative">
-                <User  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   name="username"
@@ -141,7 +195,10 @@ export default function Login() {
 
             {/* Password Field */}
             <motion.div variants={itemVariants} className="group">
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -165,7 +222,11 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
               <AnimatePresence>

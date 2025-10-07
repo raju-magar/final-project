@@ -4,7 +4,7 @@ import EmployerDashboard from "./EmployerDashboard";
 import JobSeekerDashboard from "./JobSeekerDashboard";
 import SkeletonLoader from "./SkeletonLoader";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = "http://localhost:5000";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -14,24 +14,24 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/users/profile`, {
-          credentials: "include",
+        const res = await fetch(`${API_URL}/api/users/check-session`, {
+          credentials: "include", // important
         });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
-        } else {
-          navigate("/login");
-        }
+
+        if (!res.ok) throw new Error("Unauthorized");
+
+        const data = await res.json();
+        setUser(data.user);
       } catch (err) {
-        console.error("Error fetching user:", err);
-        navigate("/login");
+        console.error(err);
+        navigate("/login"); // redirect if not logged in
       } finally {
         setLoading(false);
       }
     };
+
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   if (loading) return <SkeletonLoader />;
   if (!user) return null;
