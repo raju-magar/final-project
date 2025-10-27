@@ -1,4 +1,3 @@
-// checkSession.js
 module.exports.checkSession = (req, res, next) => {
     console.log("Session data:", req.session);
   if (req.session && req.session.user) {
