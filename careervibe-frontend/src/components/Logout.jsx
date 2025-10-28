@@ -1,31 +1,32 @@
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function Logout() {
   const navigate = useNavigate();
+  const { logoutUser } = useAuth();
 
-  useEffect(()=>{
+  useEffect(() => {
     const logout = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/logout", {
-          method: "POST",
-          credentials: "include"
-          });
+        const response = await api.post("/logout", {}, {
+          withCredentials: true
+        });
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Logout error:", errorText);
-          } else {
-            console.log("Logged out successfully");
-            navigate("/login");
-          }
-        
+        if (response.status === 200) {
+          console.log("Logged out successfully");
+          logoutUser();
+          navigate("/login");
+        } else {
+          console.error("Logout failed:", response.data);
+        }
       } catch (error) {
         console.error("Error during logout:", error);
       }
     };
-    logout();
-  }, [navigate]);
 
-  return <p>Logging you out...</p>;
+    logout();
+  }, [Navigate, logoutUser]);
+  return <p>Logging you out...x</p>
+
 }

@@ -107,10 +107,13 @@ export default function EmployerDashboard({ user }) {
 
   // Load jobs when jobs tab or overview (to update count) is active
   useEffect(() => {
+    // only fetch if user and user._id exist
+    if (!user || !user._id) return ;
+
     if (activeTab === "jobs" || activeTab === "overview") {
       fetchPostedJobs();
     }
-  }, [activeTab, user._id]);
+  }, [activeTab, user?._id]);
 
   // Handle delete job
   const handleDeleteJob = async (jobId) => {

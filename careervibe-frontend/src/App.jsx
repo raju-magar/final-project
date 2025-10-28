@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Landing from './components/Landing.jsx';
@@ -13,37 +13,18 @@ import Contact from "./components/Contact.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import PostJob from "./components/PostJob.jsx";
-import { AuthProvider } from "./context/AuthContext.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 
-export default function App() {
+// ✅ Wrap the main app content in AuthProvider
+function AppContent() {
   const [isDark, setIsDark] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
 
-  useEffect(() => {
-    // Check user session once on mount
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/users/check-session", {
-          method: "GET",
-          credentials: "include", // send cookies for session
-        });
-
-        if (res.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        console.error("Error checking session", err);
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  if (loading) return <div className="text-center p-6 text-lg">Loading...</div>;
 
   return (
-    <AuthProvider>
+    <>
       <Navbar isDark={isDark} setIsDark={setIsDark} isAuthenticated={isAuthenticated} />
 
       <div className="pt-16">
@@ -53,8 +34,7 @@ export default function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/register" element={<Register />} />
-          {/* Pass setIsAuthenticated to Login so it can update auth state */}
-          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
 
@@ -88,6 +68,14 @@ export default function App() {
           <Route path="*" element={<div className="text-center p-6 text-xl">404 - Not Found</div>} />
         </Routes>
       </div>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

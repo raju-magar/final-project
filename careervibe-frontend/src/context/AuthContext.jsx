@@ -1,51 +1,71 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
+import api from "../api/axios.js";
 
-// Create the context
 const AuthContext = createContext();
 
-// Provider component that wraps your app and provides auth state
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Call this to check if user is logged in (e.g. on app start)
-  const checkAuth = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-        withCredentials: true,
-      });
-      setUser(res.data.user);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Logout function
-  const logout = async () => {
-    try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
-      setUser(null);
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
-  // Run once on mount to check if logged in
   useEffect(() => {
-    checkAuth();
+    let isMounted = true; // Prevent updates after unmount
+
+    const checkSession = async () => {
+      try {
+        const res = await api.get("/users/check-session", { withCredentials: true, });
+        if (isMounted) {
+          if (res.data.isAuthenticated) {
+            setUser(res.data.user);
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          // Normal: user not logged in
+          if (isMounted) setUser(null);
+        } else {
+          console.error("⚠️ Unexpected error checking session:", err);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false; // cleanup
+    };
   }, []);
 
+  // ✅ Login function
+  const login = (userData) => {
+    setUser(userData || null);
+  };
+
+  // ✅ Logout function
+  const logout = async () => {
+    try {
+      await api.post("/users/logout", {}, { withCredentials: true });
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-}
+};
 
-// Custom hook to use the AuthContext easily
-export function useAuth() {
-  return useContext(AuthContext);
-}
+// ✅ Custom hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+};

@@ -44,21 +44,25 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV ==="production" ? "none": "lax",
       maxAge: 1000 * 60 * 60, // 1 hour
     },
   })
 );
 
-// Debug session (single next)
-app.use((req, res, next) => {
-  if (req.session.user) {
-    console.log("🟢 Active Session ID:", req.sessionID);
-    console.log("🟢 Session Data:", req.session.user);
-  }
-  next();
-});
+// Debug session (single next) optional session debug log (only on development)
+if (process.env.NODE_ENV === "development") {
+  app.use((req, rea, next) => {
+    if (req.session.user) {
+      console.log("Active Session ID:", req.sessionID);
+      console.log("Session User:", req.session.user);
+    } else {
+      console.log("No active user session");
+    }
+    next();
+  });
+}
 
 // Routes
 const userRoutes = require("./routes/userRoutes");
@@ -74,10 +78,13 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("❌ Error Stack:", err.stack);
-  res.status(500).json({ message: "Something went wrong" });
+  console.error("❌ Error:", err.message);
+  if (process.env.NODE_ENV === "development") {
+    console.error("Stack Trace:", err.stack);
+  }
+  res.status(500).json({ message: "something went wrong on the server" });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port: ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port: ${PORT} [${process.env.NODE_ENV}]`));

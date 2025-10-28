@@ -10,60 +10,50 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
-export default function Login() {
+export default function Login({ setIsAuthenticated }) {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { loginUser } = useAuth();
 
   // Prevent multiple redirects in Strict Mode
   const hasCheckedSession = useRef(false);
 
+  // check if user is already logged in
   useEffect(() => {
-    let isMounted = true;
-
     const checkSession = async () => {
       if (hasCheckedSession.current) return; // prevent double run
       hasCheckedSession.current = true;
 
       try {
-        const res = await fetch(
-          "http://localhost:5000/api/users/check-session",
-          {
-            method: "GET",
-            credentials: "include", // send cookies
-          }
-        );
+        const res = await api.get("/users/check-session");
+        console.log("Session response:", res.data);
 
-        if (!res.ok) {
-          console.log("No active session yet");
-          return;
+        if (res.data?.isAuthenticated) {
+          loginUser(res.data.user);
+          navigate("/dashboard");
         }
-
-        const data = await res.json();
-        if (isMounted && data.user) {
-          console.log("✅ Session active, redirecting...");
-          navigate("/dashboard", { replace: true });
-        }
-      } catch (err) {
-        console.log("Session check failed:", err.message);
+      } catch (error) {
+        console.log("No active session:", error.response?.status);
       }
     };
 
     checkSession();
-    return () => {
-      isMounted = false;
-    };
-  }, [navigate]);
+  }, [navigate, loginUser]);
 
+  // Handle the input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // validate before submitting
   const validateForm = () => {
     const newErrors = {};
     if (!formData.username) newErrors.username = "Username is required";
@@ -73,6 +63,7 @@ export default function Login() {
     return newErrors;
   };
 
+  // Handle from submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateForm();
@@ -84,25 +75,18 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // send cookies
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post("/users/login", formData);
+      console.log("Login success:", response.data);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrors({ general: data.message || "Login failed" });
-      } else {
-        console.log("✅ Login successful. Redirecting...");
+      // Update auth state
+      if (response.data.isAuthenticated) {
+        setIsAuthenticated(true);
         navigate("/dashboard");
       }
+      setIsSubmitting(false);
     } catch (err) {
-      console.error("❌ Login error:", err);
-      setErrors({ general: "Server error, please try again later" });
-    } finally {
+      console.error("Login failed:", err.response?.data || err);
+      setErrors({ general: err.response?.data?.message || "login failed" });
       setIsSubmitting(false);
     }
   };
