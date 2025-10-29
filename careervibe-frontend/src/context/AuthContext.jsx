@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }) => {
 
     const checkSession = async () => {
       try {
-        const res = await api.get("/users/check-session", { withCredentials: true, });
+        const res = await api.get("/users/check-session", {
+          withCredentials: true,
+        });
         if (isMounted) {
           if (res.data.isAuthenticated) {
             setUser(res.data.user);
@@ -21,11 +23,22 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        if (err.response && err.response.status === 401) {
-          // Normal: user not logged in
-          if (isMounted) setUser(null);
+        if (err.response) {
+          if (err.response && err.response.status === 401) {
+            // Normal: user not logged in
+            if (isMounted) setUser(null);
+          } else {
+            console.warn(
+              "⚠️ Unexpected error checking session:",
+              err.response.status,
+              err.response.data
+            );
+          }
         } else {
-          console.error("⚠️ Unexpected error checking session:", err);
+          console.warn(
+            "⚠️ Network or CORS error checking session:",
+            err.message
+          );
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -55,8 +68,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {!loading && children}
+    <AuthContext.Provider value = {{user, loading, login, logout }}>
+      {loading ? (
+        <div className="fel items-center justify-center h-screen text-gray-500">Checking session...</div>
+      ) : (children)}
     </AuthContext.Provider>
   );
 };

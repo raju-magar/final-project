@@ -1,3 +1,5 @@
+
+import api from "../api/axios";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, User, Mail, Phone, Lock, CheckCircle, AlertCircle, Loader2, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -105,6 +107,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const formErrors = validateForm();
 
     if (Object.keys(formErrors).length > 0) {
@@ -113,21 +116,14 @@ export default function Register() {
     }
 
     setIsSubmitting(true);
+    setErrors({});
+    setIsSuccess(false);
 
+    
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-        credentials: "include",
-      });
+      const response = await api.post("/users/register", formData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
-
-      const data = await response.json();
+      if (response.data.success) {
       setIsSuccess(true);
 
       // Reset form and redirect after success
@@ -141,12 +137,22 @@ export default function Register() {
           confirmPassword: "",
           role: "job-seeker",
         });
-        setIsSuccess(false);
         setFormProgress(0);
-        navigate("/"); // Redirect to Jobs page
-      }, 3000);
-    } catch (error) {
-      setErrors({ submit: error.message });
+        
+        // Redirect based on role
+        if(formData.role === "employer") {
+          navigate("/employer-dashboard");
+        } else {
+          navigate("/jobs");
+        }
+      }, 2000);
+    } else  {
+      setErrors({ submit: response.data.message || "Registration failed" });
+    } 
+  }catch (error) {
+      console.error("❌ Registration error:", error);
+      const message = error.response?.data.message || "Something went wrong during registration.";
+      setErrors({ submit: message });
     } finally {
       setIsSubmitting(false);
     }
