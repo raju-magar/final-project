@@ -1,9 +1,7 @@
-module.exports.checkSession = (req, res, next) => {
-    console.log("Session data:", req.session);
+export function checkSession(req, res, next) {
   if (req.session && req.session.user) {
-    next(); // Session is valid, proceed to the next middleware/route
+    next();
   } else {
-    res.status(401).json({ message: "Unauthorized" }); // No valid session
+    res.status(401).json({ message: "Unauthorized - please login" });
   }
-  console.log(req.session); // For debugging purposes
-};
+}
